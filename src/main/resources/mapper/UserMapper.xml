@@ -2,4 +2,12 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.take2.librarymanager.mapper.UserMapper">
 
+    <select id="selectByUserName" resultType="org.take2.librarymanager.model.User"
+            parameterType="java.lang.String">
+        SELECT * FROM user WHERE username = #{userName} LIMIT 1
+    </select>
+    <select id="selectByUserNumber" resultType="org.take2.librarymanager.model.User"
+            parameterType="java.lang.String">
+        SELECT * FROM user WHERE user_number = #{userNumber} LIMIT 1
+    </select>
 </mapper>

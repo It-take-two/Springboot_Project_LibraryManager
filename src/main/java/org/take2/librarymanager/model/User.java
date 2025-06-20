@@ -3,6 +3,8 @@ package org.take2.librarymanager.model;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.io.Serializable;
 import lombok.Data;
@@ -34,7 +36,7 @@ public class User implements Serializable {
 
     private String userNumber;
 
-    private LocalDateTime createdAt;
+    private Instant createdAt = Instant.now();
 
 
 }

@@ -2,9 +2,7 @@ package org.take2.librarymanager.model;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.annotation.IdType;
-import java.time.LocalDateTime;
-import com.baomidou.mybatisplus.annotation.TableId;
+import java.time.Instant;
 import java.io.Serializable;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -37,7 +35,7 @@ public class VClassSemesterReport implements Serializable {
     private Long readerCount;
 
     @TableField("last_borrow_time")
-    private LocalDateTime lastBorrowTime;
+    private Instant lastBorrowTime;
 
 
 }

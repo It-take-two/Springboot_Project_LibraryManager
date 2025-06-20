@@ -1,132 +1,159 @@
 package org.take2.librarymanager.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.take2.librarymanager.mapper.ClassMapper;
 import org.take2.librarymanager.mapper.UserMapper;
 import org.take2.librarymanager.model.User;
+import org.take2.librarymanager.security.AuthService;
+import org.take2.librarymanager.security.HashEncoder;
 import org.take2.librarymanager.service.IUserService;
 import org.springframework.stereotype.Service;
-import java.util.List;
 
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IUserService {
 
-    // 判断操作者是否为管理员（role_name 为 "admin"）
-    private boolean isAdmin(User user) {
-        return user != null && "admin".equals(user.getRoleName());
+    @Autowired
+    private AuthService authService;
+    @Autowired
+    private ClassMapper classMapper;
+    @Autowired
+    private UserMapper userMapper;
+    @Autowired
+    private HashEncoder hashEncoder;
+
+    private Boolean isRoot() {
+        Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return getById(userId).getUsername().equals("root");
     }
 
-    // 判断操作者是否为超级管理员（用户名为 "root"）
-    private boolean isRoot(User user) {
-        return user != null && "root".equals(user.getUsername());
+    private Boolean isAuthorized() {
+        Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return getById(userId).getRoleName().equals("admin");
     }
 
-    /**
-     * 管理员查找普通用户，返回 role_name 不为 "admin" 的用户列表
-     */
     @Override
-    public List<User> adminListNormalUsers(User operator) {
-        if (!isAdmin(operator)) {
-            return null;
-        }
-        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.ne("role_name", "admin");
-        return baseMapper.selectList(queryWrapper);
+    public User getMyUser() {
+        Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return getById(userId);
     }
 
-    /**
-     * 管理员新增用户：
-     * 如果新增用户的 role_name 为 "admin" 则只有 root 才能操作，否则任一管理员均可操作
-     */
     @Override
-    public boolean adminCreateUser(User operator, User user) {
-        if (!isAdmin(operator)) {
-            return false;
-        }
-        if ("admin".equals(user.getRoleName()) && !isRoot(operator)) {
-            return false;
-        }
-        return baseMapper.insert(user) > 0;
+    public Page<User> getUserPage(int current) {
+        if (!isAuthorized()) throw new IllegalArgumentException("权限不足");
+        Page<User> page = new Page<>(current, 12);
+        LambdaQueryWrapper<User> query = new LambdaQueryWrapper<User>()
+                .ne(User::getRoleName, "admin");
+        return this.page(page);
     }
 
-    /**
-     * 管理员修改用户信息：
-     * - 修改普通用户信息时任一管理员均可操作；
-     * - 修改管理员信息（role_name 为 "admin"）时，除非操作者正修改自己的信息，否则必须由 root 操作。
-     */
     @Override
-    public boolean adminUpdateUser(User operator, User user) {
-        if (!isAdmin(operator) || user == null || user.getId() == null) {
-            return false;
-        }
-        User target = baseMapper.selectById(user.getId());
-        if (target == null) {
-            return false;
-        }
-        if ("admin".equals(target.getRoleName())
-                && !isRoot(operator)
-                && !operator.getId().equals(target.getId())) {
-            return false;
-        }
-        return baseMapper.updateById(user) > 0;
+    public Page<User> getAdminPage(int current) {
+        if (!isRoot()) throw new IllegalArgumentException("权限不足");
+        Page<User> page = new Page<>(current, 12);
+        LambdaQueryWrapper<User> query = new LambdaQueryWrapper<User>()
+                .eq(User::getRoleName, "admin");
+        return this.page(page);
     }
 
-    /**
-     * 管理员删除用户：
-     * 如果目标用户为管理员，则只有 root 才能删除。
-     */
     @Override
-    public boolean adminDeleteUser(User operator, Long userId) {
-        if (!isAdmin(operator)) {
+    public Boolean createUser(String username, String roleName, String name, String phone, Long classId, String userNumber) {
+        if (!isAuthorized()) {
             return false;
         }
-        User target = baseMapper.selectById(userId);
-        if (target == null) {
-            return false;
-        }
-        if ("admin".equals(target.getRoleName()) && !isRoot(operator)) {
-            return false;
-        }
-        return baseMapper.deleteById(userId) > 0;
-    }
 
-    /**
-     * 普通用户获取个人详细信息
-     */
-    @Override
-    public User getMyInfo(Long userId) {
-        return baseMapper.selectById(userId);
-    }
+        if (!isRoot() && roleName.equals("admin")) {
+            return false;
+        }
 
-    /**
-     * 普通用户或管理员修改个人资料，仅允许修改密码和电话
-     */
-    @Override
-    public boolean updateMyProfile(Long userId, String newPassword, String newPhone) {
-        User user = baseMapper.selectById(userId);
+        if (classId != null && classMapper.selectById(classId) == null) {
+            return false;
+        }
+
+        if (userMapper.selectByUserNumber(userNumber) != null) {
+            return false;
+        }
+
+        User user = authService.register(username, "123456");
         if (user == null) {
             return false;
         }
-        if (newPassword != null && !newPassword.trim().isEmpty()) {
-            user.setPassword(newPassword);
-        }
-        if (newPhone != null && !newPhone.trim().isEmpty()) {
-            user.setPhone(newPhone);
-        }
-        return baseMapper.updateById(user) > 0;
+
+        user.setRoleName(roleName)
+                .setName(name)
+                .setPhone(phone)
+                .setClassId(classId)
+                .setUserNumber(userNumber);
+
+        return updateById(user);
     }
 
     @Override
-    public IPage<User> adminListNormalUsers(Page<User> page, User operator) {
-        if (!isAdmin(operator)) {
-            return null;
+    public Boolean updateMyUser(String phone) {
+        Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = getById(userId);
+        if (user == null) return false;
+        user.setPhone(phone);
+        return updateById(user);
+    }
+
+    @Override
+    public Boolean updatePassword(String oldPassword, String newPassword) {
+        Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = getById(userId);
+        if (user == null || !hashEncoder.matches(user.getUsername(), oldPassword)) {
+            return false;
         }
-        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        // 只显示普通用户（role_name 不为 admin）
-        queryWrapper.ne("role_name", "admin");
-        return baseMapper.selectPage(page, queryWrapper);
+        user.setPassword(hashEncoder.encode(newPassword));
+        return updateById(user);
+    }
+
+    @Override
+    public Boolean resetPassword(Long userId) {
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            return false;
+        }
+        if (!isAuthorized() || user.getRoleName().equals("admin")) {
+            return false;
+        }
+        user.setPassword(hashEncoder.encode("123456"));
+        return updateById(user);
+    }
+
+    @Override
+    public Boolean updateUserById(Long userId, String username, String roleName, String name, String phone, Long classId, String userNumber) {
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            return false;
+        }
+        if (!isAuthorized() || user.getRoleName().equals("admin")) {
+            return false;
+        }
+        user.setRoleName(roleName)
+                .setName(name)
+                .setPhone(phone)
+                .setClassId(classId)
+                .setUserNumber(userNumber);
+        return updateById(user);
+    }
+
+    @Override
+    public Boolean deleteUser(Long userId) {
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            return false;
+        }
+        if (!isAuthorized()) {
+            return false;
+        }
+        if (!isRoot() && user.getRoleName().equals("admin")) {
+            return false;
+        }
+        return removeById(userId);
     }
 
 }

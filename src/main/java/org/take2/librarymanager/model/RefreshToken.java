@@ -4,34 +4,44 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.io.Serializable;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
+/**
+ * <p>
+ * 
+ * </p>
+ *
+ * @author author
+ * @since 2025-06-20
+ */
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("collection")
-public class Collection implements Serializable {
+@TableName("refresh_token")
+public class RefreshToken implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @TableId(value = "id", type = IdType.AUTO)
-    private Long id;
+    @TableId(value = "refresh_token_id", type = IdType.AUTO)
+    private Long refreshTokenId;
 
-    @TableField("catalog_id")
-    private Long catalogId;
+    @TableField("user_id")
+    private Long userId;
 
-    @TableField("barcode")
-    private String barcode;
+    @TableField("expired_at")
+    private Instant expiredAt;
 
-    @TableField("storage_date")
-    private Instant storageDate;
+    @TableField("hashed_token")
+    private String hashedToken;
 
-    @TableField("is_borrowable")
-    private Boolean isBorrowable;
+    @TableField("created_at")
+    private Instant createdAt;
 
 
 }
