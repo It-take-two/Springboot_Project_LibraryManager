@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/user")
 public class UserController {
 
-    public record AdminUserRequest(
+    public record UserRequest(
             String username,
             String roleName,
             String name,
@@ -57,7 +57,7 @@ public class UserController {
     }
 
     @PostMapping("/add")
-    public Boolean addUser(@RequestBody AdminUserRequest body) {
+    public Boolean addUser(@RequestBody UserRequest body) {
         return userService.createUser(
                 body.username,
                 body.roleName,
@@ -84,7 +84,7 @@ public class UserController {
     }
 
     @PutMapping("/update")
-    public Boolean updateUser(@RequestParam Long userId, @RequestBody AdminUserRequest body) {
+    public Boolean updateUser(@RequestParam Long userId, @RequestBody UserRequest body) {
         return userService.updateUserById(
                 userId,
                 body.username,

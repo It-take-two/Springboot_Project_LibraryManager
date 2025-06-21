@@ -1,5 +1,84 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.take2.librarymanager.mapper.CollectionMapper">
+
+    <!--
+      分页查询馆藏，通过 inner join 获取图书目录（catalog）信息，
+      支持对书名、作者、出版社的模糊查询，以及大类、小类筛选
+      结果封装类型：org.take2.librarymanager.service.impl.CollectionServiceImpl$CollectionVO
+    -->
+    <select id="searchCollections" resultType="org.take2.librarymanager.service.impl.CollectionServiceImpl$CollectionVO" parameterType="map">
+        SELECT
+        c.id,
+        c.barcode,
+        c.is_borrowable AS isBorrowable,
+        c.storage_date AS storageDate,
+        cat.id AS catalogId,
+        cat.name,
+        cat.isbn,
+        cat.publisher,
+        cat.category,
+        cat.publish_date AS publishDate,
+        cat.author,
+        cat.value
+        FROM collection c
+        INNER JOIN catalog cat ON c.catalog_id = cat.id
+        WHERE 1=1
+        <if test="keyword != null and keyword != ''">
+            AND (cat.name LIKE CONCAT('%', #{keyword}, '%')
+            OR cat.author LIKE CONCAT('%', #{keyword}, '%')
+            OR cat.publisher LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        <if test="bigCategory != null and bigCategory != ''">
+            AND cat.category LIKE CONCAT(#{bigCategory}, '%')
+        </if>
+        <if test="subCategory != null and subCategory != ''">
+            AND cat.category = #{subCategory}
+        </if>
+        ORDER BY c.id DESC
+    </select>
+
+    <!-- 根据 barcode 精确查询馆藏记录 -->
+    <select id="selectByBarcode" resultType="org.take2.librarymanager.service.impl.CollectionServiceImpl$CollectionVO" parameterType="string">
+        SELECT
+            c.id,
+            c.barcode,
+            c.is_borrowable AS isBorrowable,
+            c.storage_date AS storageDate,
+            cat.id AS catalogId,
+            cat.name,
+            cat.isbn,
+            cat.publisher,
+            cat.category,
+            cat.publish_date AS publishDate,
+            cat.author,
+            cat.value
+        FROM collection c
+                 INNER JOIN catalog cat ON c.catalog_id = cat.id
+        WHERE c.barcode = #{barcode}
+    </select>
+
+    <!-- 随机查询几本可借图书 -->
+    <select id="selectRandomBorrowable" resultType="org.take2.librarymanager.service.impl.CollectionServiceImpl$CollectionVO" parameterType="int">
+        SELECT
+            c.id,
+            c.barcode,
+            c.is_borrowable AS isBorrowable,
+            c.storage_date AS storageDate,
+            cat.id AS catalogId,
+            cat.name,
+            cat.isbn,
+            cat.publisher,
+            cat.category,
+            cat.publish_date AS publishDate,
+            cat.author,
+            cat.value
+        FROM collection c
+                 INNER JOIN catalog cat ON c.catalog_id = cat.id
+        WHERE c.is_borrowable = true
+        ORDER BY RAND()
+        LIMIT #{count}
+    </select>
 
 </mapper>

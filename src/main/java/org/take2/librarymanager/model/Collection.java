@@ -28,7 +28,7 @@ public class Collection implements Serializable {
     private String barcode;
 
     @TableField("storage_date")
-    private Instant storageDate;
+    private Instant storageDate = Instant.now();
 
     @TableField("is_borrowable")
     private Boolean isBorrowable;

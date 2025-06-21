@@ -1,6 +1,8 @@
 package org.take2.librarymanager.model;
 
 import java.math.BigDecimal;
+
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -21,18 +23,25 @@ public class Borrow implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
-    private Instant borrowDate;
+    @TableField("borrow_date")
+    private Instant borrowDate = Instant.now();
 
+    @TableField("user_id")
     private Long userId;
 
+    @TableField("collection_id")
     private Long collectionId;
 
+    @TableField("return_deadline")
     private Instant returnDeadline;
 
+    @TableField("return_date")
     private Instant returnDate;
 
+    @TableField("renewed_times")
     private Integer renewedTimes;
 
+    @TableField("fine_paid")
     private BigDecimal finePaid;
 
 

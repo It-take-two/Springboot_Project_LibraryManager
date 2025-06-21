@@ -1,5 +1,78 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.take2.librarymanager.mapper.BorrowMapper">
+
+    <!-- 查询所有借阅记录，联表查询对应馆藏的 is_borrowable -->
+    <select id="selectAllBorrows" resultType="org.take2.librarymanager.service.impl.BorrowServiceImpl$BorrowVO" parameterType="map">
+        SELECT
+            b.id,
+            b.borrow_date AS borrowDate,
+            b.user_id AS userId,
+            b.collection_id AS collectionId,
+            b.return_deadline AS returnDeadline,
+            b.return_date AS returnDate,
+            b.renewed_times AS renewedTimes,
+            b.fine_paid AS finePaid,
+            c.is_borrowable AS collectionIsBorrowable
+        FROM borrow b
+                 INNER JOIN collection c ON b.collection_id = c.id
+        ORDER BY b.id DESC
+    </select>
+
+    <!-- 查询未完成的借阅记录：馆藏 is_borrowable = false -->
+    <select id="selectIncompleteBorrows" resultType="org.take2.librarymanager.service.impl.BorrowServiceImpl$BorrowVO" parameterType="map">
+        SELECT
+            b.id,
+            b.borrow_date AS borrowDate,
+            b.user_id AS userId,
+            b.collection_id AS collectionId,
+            b.return_deadline AS returnDeadline,
+            b.return_date AS returnDate,
+            b.renewed_times AS renewedTimes,
+            b.fine_paid AS finePaid,
+            c.is_borrowable AS collectionIsBorrowable
+        FROM borrow b
+                 INNER JOIN collection c ON b.collection_id = c.id
+        WHERE c.is_borrowable = false
+        ORDER BY b.id DESC
+    </select>
+
+    <!-- 根据用户ID查询借阅记录 -->
+    <select id="selectBorrowsByUser" resultType="org.take2.librarymanager.service.impl.BorrowServiceImpl$BorrowVO" parameterType="map">
+        SELECT
+            b.id,
+            b.borrow_date AS borrowDate,
+            b.user_id AS userId,
+            b.collection_id AS collectionId,
+            b.return_deadline AS returnDeadline,
+            b.return_date AS returnDate,
+            b.renewed_times AS renewedTimes,
+            b.fine_paid AS finePaid,
+            c.is_borrowable AS collectionIsBorrowable
+        FROM borrow b
+                 INNER JOIN collection c ON b.collection_id = c.id
+        WHERE b.user_id = #{userId}
+        ORDER BY b.id DESC
+    </select>
+
+    <!-- 查询当前用户未完成的借阅记录 -->
+    <select id="selectMyIncompleteBorrows" resultType="org.take2.librarymanager.service.impl.BorrowServiceImpl$BorrowVO" parameterType="map">
+        SELECT
+            b.id,
+            b.borrow_date AS borrowDate,
+            b.user_id AS userId,
+            b.collection_id AS collectionId,
+            b.return_deadline AS returnDeadline,
+            b.return_date AS returnDate,
+            b.renewed_times AS renewedTimes,
+            b.fine_paid AS finePaid,
+            c.is_borrowable AS collectionIsBorrowable
+        FROM borrow b
+                 INNER JOIN collection c ON b.collection_id = c.id
+        WHERE b.user_id = #{userId} AND c.is_borrowable = false
+        ORDER BY b.id DESC
+    </select>
 
 </mapper>

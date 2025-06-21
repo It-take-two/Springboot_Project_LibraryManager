@@ -12,14 +12,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
-/**
- * <p>
- * 
- * </p>
- *
- * @author author
- * @since 2025-06-20
- */
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
@@ -41,7 +33,7 @@ public class RefreshToken implements Serializable {
     private String hashedToken;
 
     @TableField("created_at")
-    private Instant createdAt;
+    private Instant createdAt = Instant.now();
 
 
 }
