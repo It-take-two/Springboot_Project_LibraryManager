@@ -33,6 +33,11 @@ public class UserController {
             Instant createAt
     ) {}
 
+    public record UserPageResponse(
+            List<UserResponse> records,
+            Long total
+    ) {}
+
     private final IUserService userService;
 
     @GetMapping("/userInfo")
@@ -49,11 +54,13 @@ public class UserController {
     }
 
     @GetMapping("/adminList")
-    public List<UserResponse> getAdminList(@RequestParam int page) {
-        return userService.getAdminPage(page).getRecords()
+    public UserPageResponse getAdminList(@RequestParam int page) {
+        return new UserPageResponse(userService.getAdminPage(page).getRecords()
                 .stream()
                 .map(this::toResponse)
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()),
+                userService.getUserPage(page).getTotal()
+        );
     }
 
     @PostMapping("/add")

@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.take2.librarymanager.service.ICollectionService;
 import org.take2.librarymanager.service.impl.CollectionServiceImpl.CollectionVO;
+
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,7 +33,12 @@ public class CollectionController {
             String category,
             Instant publishDate,
             String author,
-            java.math.BigDecimal value
+            BigDecimal value
+    ) {}
+
+    public record CollectionPageResponse(
+            List<CollectionResponse> records,
+            Long total
     ) {}
 
     /**
@@ -44,13 +51,13 @@ public class CollectionController {
      * GET /collection/search?page=1&keyword=xxx&bigCategory=A&subCategory=A1
      */
     @GetMapping("/search")
-    public List<CollectionResponse> searchCollections(
+    public CollectionPageResponse searchCollections(
             @RequestParam int page,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String bigCategory,
             @RequestParam(required = false) String subCategory) {
         Page<CollectionVO> resultPage = collectionService.searchCollections(page, keyword, bigCategory, subCategory);
-        return resultPage.getRecords().stream()
+        return new CollectionPageResponse(resultPage.getRecords().stream()
                 .map(vo -> new CollectionResponse(
                         vo.id(),
                         vo.barcode(),
@@ -64,7 +71,9 @@ public class CollectionController {
                         vo.publishDate(),
                         vo.author(),
                         vo.value()))
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()),
+                resultPage.getTotal()
+        );
     }
 
     /**
@@ -95,8 +104,8 @@ public class CollectionController {
      * GET /collection/random?count=3
      */
     @GetMapping("/random")
-    public List<CollectionResponse> getRandomBorrowableCollections(@RequestParam int count) {
-        List<CollectionVO> list = collectionService.getRandomBorrowableCollections(count);
+    public List<CollectionResponse> getRandomBorrowableCollections() {
+        List<CollectionVO> list = collectionService.getRandomBorrowableCollections(10);
         return list.stream()
                 .map(vo -> new CollectionResponse(
                         vo.id(),

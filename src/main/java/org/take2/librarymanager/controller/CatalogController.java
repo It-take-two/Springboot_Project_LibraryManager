@@ -44,13 +44,19 @@ public class CatalogController {
             BigDecimal value
     ) {}
 
+    public record CatalogPageResponse(
+            List<CatalogResponse> records,
+            Long total
+    ) {}
+
     /**
      * 分页查询图书目录（GET /catalog/list?page=1）
      */
     @GetMapping("/list")
-    public List<CatalogResponse> getCatalogList(@RequestParam int page) {
+    public CatalogPageResponse getCatalogList(@RequestParam int page) {
         Page<Catalog> catalogPage = catalogService.getCatalogPage(page);
-        return catalogPage.getRecords()
+        return new CatalogPageResponse(
+                catalogPage.getRecords()
                 .stream()
                 .map(catalog -> new CatalogResponse(
                         catalog.getId(),
@@ -61,8 +67,11 @@ public class CatalogController {
                         catalog.getPublishDate(),
                         catalog.getAuthor(),
                         catalog.getValue()))
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()),
+                catalogPage.getTotal()
+        );
     }
+
 
     /**
      * 管理员新增图书目录（POST /catalog/add）

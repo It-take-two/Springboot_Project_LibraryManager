@@ -6,14 +6,10 @@ import org.take2.librarymanager.model.Catalog;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 public interface ICatalogService extends IService<Catalog> {
 
-    /**
-     * 分页查询图书目录列表
-     * @param current 当前页码
-     * @return 分页结果
-     */
     Page<Catalog> getCatalogPage(int current);
 
     /**

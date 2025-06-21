@@ -35,6 +35,11 @@ public class BorrowController {
             Boolean collectionIsBorrowable
     ) {}
 
+    public record BorrowPageResponse(
+            List<BorrowResponse> records,
+            Long total
+    ) {}
+
     /**
      * 请求体：用于新增借阅记录
      */
@@ -59,9 +64,9 @@ public class BorrowController {
      * GET /borrow/list?page=1
      */
     @GetMapping("/list")
-    public List<BorrowResponse> getAllBorrows(@RequestParam int page) {
+    public BorrowPageResponse getAllBorrows(@RequestParam int page) {
         Page<BorrowServiceImpl.BorrowVO> result = borrowService.getAllBorrows(page);
-        return result.getRecords().stream()
+        return new BorrowPageResponse(result.getRecords().stream()
                 .map(vo -> new BorrowResponse(
                         vo.id(),
                         vo.borrowDate(),
@@ -72,7 +77,9 @@ public class BorrowController {
                         vo.renewedTimes(),
                         vo.finePaid(),
                         vo.collectionIsBorrowable()))
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()),
+                result.getTotal()
+        );
     }
 
     /**
@@ -80,9 +87,9 @@ public class BorrowController {
      * GET /borrow/incomplete?page=1
      */
     @GetMapping("/incomplete")
-    public List<BorrowResponse> getIncompleteBorrows(@RequestParam int page) {
+    public BorrowPageResponse getIncompleteBorrows(@RequestParam int page) {
         Page<BorrowServiceImpl.BorrowVO> result = borrowService.getIncompleteBorrows(page);
-        return result.getRecords().stream()
+        return new BorrowPageResponse(result.getRecords().stream()
                 .map(vo -> new BorrowResponse(
                         vo.id(),
                         vo.borrowDate(),
@@ -93,7 +100,9 @@ public class BorrowController {
                         vo.renewedTimes(),
                         vo.finePaid(),
                         vo.collectionIsBorrowable()))
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()),
+                result.getTotal()
+        );
     }
 
     /**
@@ -101,9 +110,9 @@ public class BorrowController {
      * GET /borrow/user?userId=xxx&page=1
      */
     @GetMapping("/user")
-    public List<BorrowResponse> getBorrowsByUser(@RequestParam Long userId, @RequestParam int page) {
+    public BorrowPageResponse getBorrowsByUser(@RequestParam Long userId, @RequestParam int page) {
         Page<BorrowServiceImpl.BorrowVO> result = borrowService.getBorrowsByUser(userId, page);
-        return result.getRecords().stream()
+        return new BorrowPageResponse(result.getRecords().stream()
                 .map(vo -> new BorrowResponse(
                         vo.id(),
                         vo.borrowDate(),
@@ -114,7 +123,9 @@ public class BorrowController {
                         vo.renewedTimes(),
                         vo.finePaid(),
                         vo.collectionIsBorrowable()))
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()),
+                result.getTotal()
+        );
     }
 
     /**
@@ -122,9 +133,9 @@ public class BorrowController {
      * GET /borrow/my?page=1
      */
     @GetMapping("/my")
-    public List<BorrowResponse> getMyBorrows(@RequestParam int page) {
+    public BorrowPageResponse getMyBorrows(@RequestParam int page) {
         Page<BorrowServiceImpl.BorrowVO> result = borrowService.getMyBorrows(page);
-        return result.getRecords().stream()
+        return new BorrowPageResponse(result.getRecords().stream()
                 .map(vo -> new BorrowResponse(
                         vo.id(),
                         vo.borrowDate(),
@@ -135,7 +146,9 @@ public class BorrowController {
                         vo.renewedTimes(),
                         vo.finePaid(),
                         vo.collectionIsBorrowable()))
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()),
+                result.getTotal()
+        );
     }
 
     /**
@@ -143,9 +156,9 @@ public class BorrowController {
      * GET /borrow/my/incomplete?page=1
      */
     @GetMapping("/my/incomplete")
-    public List<BorrowResponse> getMyIncompleteBorrows(@RequestParam int page) {
+    public BorrowPageResponse getMyIncompleteBorrows(@RequestParam int page) {
         Page<BorrowServiceImpl.BorrowVO> result = borrowService.getMyIncompleteBorrows(page);
-        return result.getRecords().stream()
+        return new BorrowPageResponse(result.getRecords().stream()
                 .map(vo -> new BorrowResponse(
                         vo.id(),
                         vo.borrowDate(),
@@ -156,7 +169,9 @@ public class BorrowController {
                         vo.renewedTimes(),
                         vo.finePaid(),
                         vo.collectionIsBorrowable()))
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()),
+                result.getTotal()
+        );
     }
 
     /**
