@@ -91,8 +91,8 @@
         WHERE b.user_id = #{userId}
         AND b.return_date IS NULL
         AND b.return_deadline IS NOT NULL
-        AND b.return_deadline < NOW()
-        AND (b.fine_paid IS NULL OR b.fine_paid = 0)
+        AND b.return_deadline &lt; NOW()
+          AND (b.fine_paid IS NULL OR b.fine_paid = 0)
         ORDER BY b.id DESC
     </select>
 
