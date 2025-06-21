@@ -75,4 +75,25 @@
         ORDER BY b.id DESC
     </select>
 
+    <select id="selectOverdueAndUnpaidBorrowsByUser" resultType="org.take2.librarymanager.service.impl.BorrowServiceImpl$BorrowVO">
+        SELECT
+        b.id,
+        b.borrow_date AS borrowDate,
+        b.user_id AS userId,
+        b.collection_id AS collectionId,
+        b.return_deadline AS returnDeadline,
+        b.return_date AS returnDate,
+        b.renewed_times AS renewedTimes,
+        b.fine_paid AS finePaid,
+        c.is_borrowable AS collectionIsBorrowable
+        FROM borrow b
+        INNER JOIN collection c ON b.collection_id = c.id
+        WHERE b.user_id = #{userId}
+        AND b.return_date IS NULL
+        AND b.return_deadline IS NOT NULL
+        AND b.return_deadline < NOW()
+        AND (b.fine_paid IS NULL OR b.fine_paid = 0)
+        ORDER BY b.id DESC
+    </select>
+
 </mapper>

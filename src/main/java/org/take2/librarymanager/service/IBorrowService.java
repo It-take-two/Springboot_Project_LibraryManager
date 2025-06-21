@@ -7,6 +7,7 @@ import org.take2.librarymanager.service.impl.BorrowServiceImpl;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 /**
  * 借阅记录业务接口
@@ -53,4 +54,6 @@ public interface IBorrowService extends IService<Borrow> {
      * 删除借阅记录
      */
     boolean deleteBorrow(Long id);
+
+    List<BorrowServiceImpl.BorrowVO> getOverdueAndUnpaidBorrowsByUser();
 }

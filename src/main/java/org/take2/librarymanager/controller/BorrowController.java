@@ -3,14 +3,16 @@ package org.take2.librarymanager.controller;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import org.take2.librarymanager.model.Borrow;
 import org.take2.librarymanager.service.IBorrowService;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.take2.librarymanager.service.impl.BorrowServiceImpl;
 
 @RequiredArgsConstructor
@@ -39,6 +41,8 @@ public class BorrowController {
             List<BorrowResponse> records,
             Long total
     ) {}
+
+    private final Map<Long, SseEmitter> sseEmitters = new ConcurrentHashMap<>();
 
     /**
      * 请求体：用于新增借阅记录
@@ -172,6 +176,23 @@ public class BorrowController {
                 .collect(Collectors.toList()),
                 result.getTotal()
         );
+    }
+
+    @GetMapping("/overdue")
+    public List<BorrowResponse> getOverdueBorrowsByUser() {
+        List<BorrowServiceImpl.BorrowVO> result = borrowService.getOverdueAndUnpaidBorrowsByUser();
+        return result.stream()
+                .map(vo -> new BorrowResponse(
+                        vo.id(),
+                        vo.borrowDate(),
+                        vo.userId(),
+                        vo.collectionId(),
+                        vo.returnDeadline(),
+                        vo.returnDate(),
+                        vo.renewedTimes(),
+                        vo.finePaid(),
+                        vo.collectionIsBorrowable()))
+                .collect(Collectors.toList());
     }
 
     /**

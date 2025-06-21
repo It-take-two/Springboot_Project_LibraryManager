@@ -7,7 +7,6 @@ import org.take2.librarymanager.mapper.CollectionMapper;
 import org.take2.librarymanager.mapper.UserMapper;
 import org.take2.librarymanager.model.Borrow;
 import org.take2.librarymanager.model.Collection;
-import org.take2.librarymanager.model.User;
 import org.take2.librarymanager.service.IBorrowService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 @Service
 public class BorrowServiceImpl extends ServiceImpl<BorrowMapper, Borrow> implements IBorrowService {
@@ -84,7 +84,22 @@ public class BorrowServiceImpl extends ServiceImpl<BorrowMapper, Borrow> impleme
         return removeById(id);
     }
 
-    public static record BorrowVO(
+    public boolean isOverdue(BorrowVO vo) {
+        return vo.returnDate() == null
+                && vo.returnDeadline() != null
+                && Instant.now().isAfter(vo.returnDeadline());
+    }
+
+    @Override
+    public List<BorrowVO> getOverdueAndUnpaidBorrowsByUser() {
+        Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (userId == null) {
+            throw new IllegalArgumentException("找不到用户");
+        }
+        return borrowMapper.selectOverdueAndUnpaidBorrowsByUser(userId);
+    }
+
+    public record BorrowVO(
             Long id,
             Instant borrowDate,
             Long userId,
@@ -95,4 +110,5 @@ public class BorrowServiceImpl extends ServiceImpl<BorrowMapper, Borrow> impleme
             BigDecimal finePaid,
             Boolean collectionIsBorrowable
     ) {}
+
 }

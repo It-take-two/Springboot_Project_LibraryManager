@@ -32,4 +32,6 @@ public interface BorrowMapper extends BaseMapper<Borrow> {
      * 查询当前用户未完成的借阅记录：user_id = #{userId} 且馆藏 is_borrowable = false
      */
     Page<BorrowServiceImpl.BorrowVO> selectMyIncompleteBorrows(Page<?> page, @Param("userId") Long userId);
+
+    List<BorrowServiceImpl.BorrowVO> selectOverdueAndUnpaidBorrowsByUser(@Param("userId") Long userId);
 }
