@@ -21,6 +21,11 @@ public class AuthController {
 
     public record RefreshToken(String refreshToken) {}
 
+    @PostMapping("/register")
+    public Object register(@RequestBody AuthRequest authRequest) {
+        return authService.register(authRequest.name, authRequest.password);
+    }
+
     @PostMapping("/login")
     public Object login(@RequestBody AuthRequest body) {
         return authService.login(body.name, body.password);
