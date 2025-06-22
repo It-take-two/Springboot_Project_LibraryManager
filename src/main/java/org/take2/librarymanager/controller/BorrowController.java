@@ -179,7 +179,7 @@ public class BorrowController {
     }
 
     @GetMapping("/overdue")
-    public List<BorrowResponse> getOverdueBorrowsByUser() {
+    public List<BorrowResponse> getMyOverdueBorrows() {
         List<BorrowServiceImpl.BorrowVO> result = borrowService.getOverdueAndUnpaidBorrowsByUser();
         return result.stream()
                 .map(vo -> new BorrowResponse(
