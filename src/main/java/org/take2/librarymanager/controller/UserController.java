@@ -1,6 +1,7 @@
 package org.take2.librarymanager.controller;
 
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.take2.librarymanager.model.User;
@@ -47,20 +48,24 @@ public class UserController {
     }
 
     @GetMapping("/userList")
-    public List<UserResponse> getUserList(@RequestParam int page) {
-        return userService.getUserPage(page).getRecords()
+    public UserPageResponse getUserList(@RequestParam int page) {
+        IPage<User> iPage = userService.getUserPage(page);
+        return new UserPageResponse(iPage.getRecords()
                 .stream()
                 .map(this::toResponse)
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()),
+                iPage.getTotal()
+        );
     }
 
     @GetMapping("/adminList")
     public UserPageResponse getAdminList(@RequestParam int page) {
-        return new UserPageResponse(userService.getAdminPage(page).getRecords()
+        IPage<User> iPage = userService.getUserPage(page);
+        return new UserPageResponse(iPage.getRecords()
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList()),
-                userService.getUserPage(page).getTotal()
+                iPage.getTotal()
         );
     }
 
