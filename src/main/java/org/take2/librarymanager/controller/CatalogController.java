@@ -133,4 +133,24 @@ public class CatalogController {
                 catalog.getAuthor(),
                 catalog.getValue());
     }
+
+    /**
+     * 根据 ISBN 获取图书目录详情（GET /catalog/isbn?isbn=...）
+     */
+    @GetMapping("/isbn")
+    public CatalogResponse getCatalogByIsbn(@RequestParam String isbn) {
+        Catalog catalog = catalogService.getCatalogByIsbn(isbn);
+        if (catalog == null) {
+            return null; // 可根据需求改为返回错误信息或抛异常
+        }
+        return new CatalogResponse(
+                catalog.getId(),
+                catalog.getName(),
+                catalog.getIsbn(),
+                catalog.getPublisher(),
+                catalog.getCategory(),
+                catalog.getPublishDate(),
+                catalog.getAuthor(),
+                catalog.getValue());
+    }
 }

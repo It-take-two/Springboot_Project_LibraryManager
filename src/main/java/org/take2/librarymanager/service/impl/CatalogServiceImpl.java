@@ -89,4 +89,11 @@ public class CatalogServiceImpl extends ServiceImpl<CatalogMapper, Catalog> impl
     public Catalog getCatalogById(Long id) {
         return this.getById(id);
     }
+
+    @Override
+    public Catalog getCatalogByIsbn(String isbn) {
+        LambdaQueryWrapper<Catalog> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Catalog::getIsbn, isbn);
+        return this.getOne(queryWrapper);
+    }
 }
