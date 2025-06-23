@@ -60,7 +60,7 @@ public class UserController {
 
     @GetMapping("/adminList")
     public UserPageResponse getAdminList(@RequestParam int page) {
-        IPage<User> iPage = userService.getUserPage(page);
+        IPage<User> iPage = userService.getAdminPage(page);
         return new UserPageResponse(iPage.getRecords()
                 .stream()
                 .map(this::toResponse)
