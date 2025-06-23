@@ -1,13 +1,18 @@
 package org.take2.librarymanager.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.take2.librarymanager.mapper.BorrowMapper;
+import org.take2.librarymanager.mapper.BorrowRuleMapper;
 import org.take2.librarymanager.mapper.CollectionMapper;
 import org.take2.librarymanager.mapper.UserMapper;
 import org.take2.librarymanager.model.Borrow;
+import org.take2.librarymanager.model.BorrowRule;
 import org.take2.librarymanager.model.Collection;
+import org.take2.librarymanager.model.User;
+import org.take2.librarymanager.service.IBorrowRuleService;
 import org.take2.librarymanager.service.IBorrowService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class BorrowServiceImpl extends ServiceImpl<BorrowMapper, Borrow> implements IBorrowService {
@@ -28,6 +34,29 @@ public class BorrowServiceImpl extends ServiceImpl<BorrowMapper, Borrow> impleme
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private BorrowRuleMapper borrowRuleMapper;
+
+    public Instant calculateReturnDeadline(Long userId, Instant baseTime) {
+        if (userId == null || baseTime == null) {
+            throw new IllegalArgumentException("用户ID和起始时间不能为空");
+        }
+
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new IllegalArgumentException("找不到用户");
+        }
+
+        BorrowRule rule = borrowRuleMapper.selectOne(
+                new LambdaQueryWrapper<BorrowRule>().eq(BorrowRule::getRoleName, user.getRoleName())
+        );
+        if (rule == null) {
+            throw new IllegalStateException("借阅规则不存在");
+        }
+
+        return baseTime.plusSeconds(rule.getLoanDays() * 86400L);
+    }
 
     @Override
     public IPage<BorrowVO> getAllBorrows(int current) {
@@ -62,22 +91,101 @@ public class BorrowServiceImpl extends ServiceImpl<BorrowMapper, Borrow> impleme
 
     @Override
     public boolean createBorrow(Borrow borrow) {
-        // 此处可以扩展检查：如检查用户是否存在、馆藏是否存在等
-        return save(borrow);
+        User user = userMapper.selectById(borrow.getUserId());
+        Collection collection = collectionMapper.selectById(borrow.getCollectionId());
+
+        if (user == null || collection == null || !collection.getIsBorrowable()) {
+            return false;
+        }
+
+        borrow.setBorrowDate(Instant.now());
+        borrow.setReturnDeadline(calculateReturnDeadline(user.getId(), borrow.getBorrowDate()));
+        borrow.setRenewedTimes(0);
+        borrow.setFinePaid(BigDecimal.ZERO);
+
+        boolean result = save(borrow);
+        System.out.println("result:" + result);
+
+        if (result) {
+            collection.setIsBorrowable(false);
+            collectionMapper.updateById(collection);
+        }
+
+        return result;
     }
 
     @Override
     public boolean updateBorrow(Borrow borrow, Boolean collectionBorrowable) {
-        boolean result = updateById(borrow);
+        Borrow existing = getById(borrow.getId());
+        if (existing == null) return false;
+
+        // === 还书 ===
+        if (borrow.getReturnDate() != null && existing.getReturnDate() == null) {
+            existing.setReturnDate(Instant.now());
+            existing.setFinePaid(borrow.getFinePaid() != null ? borrow.getFinePaid() : BigDecimal.ZERO);
+        } else if (borrow.getRenewedTimes() != null) {
+            System.out.println(borrow.getUserId() + existing.getUserId());
+            if (!Objects.equals(borrow.getUserId(), existing.getUserId())) {
+                throw new IllegalArgumentException("续借用户不一致");
+            }
+            User user = userMapper.selectById(existing.getUserId());
+            BorrowRule rule = borrowRuleMapper.selectOne(
+                    new LambdaQueryWrapper<BorrowRule>().eq(BorrowRule::getRoleName, user.getRoleName())
+            );
+            if (rule == null) {
+                throw new IllegalStateException("借阅规则不存在");
+            }
+            if (borrow.getRenewedTimes() > rule.getRenewTimes()) {
+                throw new IllegalStateException("已达到续借上限");
+            }
+
+            existing.setRenewedTimes(borrow.getRenewedTimes());
+            existing.setReturnDeadline(
+                    calculateReturnDeadline(user.getId(), existing.getReturnDeadline())
+            );
+        }
+
+        boolean result = updateById(existing);
+
         if (collectionBorrowable != null) {
-            // 更新对应馆藏的可借状态
-            Collection coll = collectionMapper.selectById(borrow.getCollectionId());
+            Collection coll = collectionMapper.selectById(existing.getCollectionId());
             if (coll != null) {
                 coll.setIsBorrowable(collectionBorrowable);
                 collectionMapper.updateById(coll);
             }
         }
+
         return result;
+    }
+
+    @Override
+    public BorrowVO getBorrowByBarcode(String barcode) {
+        CollectionServiceImpl.CollectionVO collection = collectionMapper.selectByBarcode(barcode);
+        if (collection == null) {
+            throw new IllegalArgumentException("找不到该条码对应的馆藏");
+        }
+
+        Borrow borrow = borrowMapper.selectOne(
+                new LambdaQueryWrapper<Borrow>()
+                        .eq(Borrow::getCollectionId, collection.id())
+                        .isNull(Borrow::getReturnDate)
+                        .last("LIMIT 1")
+        );
+        if (borrow == null) {
+            throw new IllegalArgumentException("该馆藏当前无借出记录");
+        }
+
+        return new BorrowVO(
+                borrow.getId(),
+                borrow.getBorrowDate(),
+                borrow.getUserId(),
+                borrow.getCollectionId(),
+                borrow.getReturnDeadline(),
+                borrow.getReturnDate(),
+                borrow.getRenewedTimes(),
+                borrow.getFinePaid(),
+                collection.isBorrowable()
+        );
     }
 
     @Override

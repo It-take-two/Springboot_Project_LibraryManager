@@ -60,6 +60,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
     @Override
+    public User getUserByUserNumber(String userNumber) {
+        return userMapper.selectByUserNumber(userNumber);
+    }
+
+    @Override
     public Boolean createUser(String username, String roleName, String name, String phone, Long classId, String userNumber) {
         if (!isAuthorized()) {
             return false;

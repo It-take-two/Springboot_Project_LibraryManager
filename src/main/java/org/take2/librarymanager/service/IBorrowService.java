@@ -51,6 +51,8 @@ public interface IBorrowService extends IService<Borrow> {
      */
     boolean updateBorrow(Borrow borrow, Boolean collectionBorrowable);
 
+    BorrowServiceImpl.BorrowVO getBorrowByBarcode(String barcode);
+
     /**
      * 删除借阅记录
      */

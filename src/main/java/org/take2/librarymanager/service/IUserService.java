@@ -13,6 +13,8 @@ public interface IUserService extends IService<User> {
 
     Page<User> getAdminPage(int current);
 
+    User getUserByUserNumber(String userNumber);
+
     Boolean createUser(String username, String roleName, String name, String phone, Long classId, String userNumber);
 
     Boolean updateMyUser(String phone);

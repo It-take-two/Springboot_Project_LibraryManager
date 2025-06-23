@@ -24,6 +24,7 @@ public class UserController {
     ) {}
 
     public record UserResponse(
+            Long userId,
             String username,
             String roleName,
             String name,
@@ -61,6 +62,12 @@ public class UserController {
                 .collect(Collectors.toList()),
                 userService.getUserPage(page).getTotal()
         );
+    }
+
+    @GetMapping("/userNumber")
+    public UserResponse getUserByNumber(@RequestParam String userNumber) {
+        User user = userService.getUserByUserNumber(userNumber);
+        return toResponse(user);
     }
 
     @PostMapping("/add")
@@ -110,6 +117,7 @@ public class UserController {
 
     private UserResponse toResponse(User user) {
         return new UserResponse(
+                user.getId(),
                 user.getUsername(),
                 user.getRoleName(),
                 user.getName(),

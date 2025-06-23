@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+
+import org.take2.librarymanager.service.ICollectionService;
 import org.take2.librarymanager.service.impl.BorrowServiceImpl;
 
 @RequiredArgsConstructor
@@ -22,6 +24,7 @@ import org.take2.librarymanager.service.impl.BorrowServiceImpl;
 public class BorrowController {
 
     private final IBorrowService borrowService;
+    private final ICollectionService collectionService;
 
     /**
      * 响应体：封装借阅记录和对应馆藏状态信息
@@ -50,19 +53,35 @@ public class BorrowController {
      */
     public record BorrowAddRequest(
             Long userId,
-            Long collectionId,
-            Instant returnDeadline
+            Long collectionId
     ) {}
 
     /**
      * 请求体：用于更新借阅记录，允许修改续借次数、罚款、归还日期及对应馆藏的可借状态
      */
     public record BorrowUpdateRequest(
+            Long userId,
             Integer renewedTimes,
             BigDecimal finePaid,
             Instant returnDate,
             Boolean collectionIsBorrowable
     ) {}
+
+    @GetMapping("/barcode")
+    public BorrowResponse getBorrowByBarcode(@RequestParam String barcode) {
+        BorrowServiceImpl.BorrowVO vo =  borrowService.getBorrowByBarcode(barcode);
+        return new BorrowResponse(
+                vo.id(),
+                vo.borrowDate(),
+                vo.userId(),
+                vo.collectionId(),
+                vo.returnDeadline(),
+                vo.returnDate(),
+                vo.renewedTimes(),
+                vo.finePaid(),
+                vo.collectionIsBorrowable()
+        );
+    }
 
     /**
      * 管理员获取所有借阅记录
@@ -199,14 +218,13 @@ public class BorrowController {
     /**
      * 管理员新增借阅记录
      * POST /borrow/add
-     * 请求体示例：{"userId": 1, "collectionId": 10, "returnDeadline": "2025-07-01T00:00:00Z"}
+     * 请求体示例：{"userId": 1, "collectionId": 10}
      */
     @PostMapping("/add")
     public boolean addBorrow(@RequestBody BorrowAddRequest request) {
         Borrow borrow = new Borrow();
         borrow.setUserId(request.userId());
         borrow.setCollectionId(request.collectionId());
-        borrow.setReturnDeadline(request.returnDeadline());
         return borrowService.createBorrow(borrow);
     }
 
@@ -218,6 +236,7 @@ public class BorrowController {
     @PutMapping("/update")
     public boolean updateBorrow(@RequestParam Long borrowId, @RequestBody BorrowUpdateRequest request) {
         Borrow borrow = new Borrow();
+        borrow.setUserId(request.userId());
         borrow.setId(borrowId);
         borrow.setRenewedTimes(request.renewedTimes());
         borrow.setFinePaid(request.finePaid());
