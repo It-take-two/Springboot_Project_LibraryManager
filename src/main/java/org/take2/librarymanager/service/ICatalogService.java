@@ -32,4 +32,10 @@ public interface ICatalogService extends IService<Catalog> {
      * 根据 ID 获取图书目录详情
      */
     Catalog getCatalogById(Long id);
+
+    /**
+     * 根据 ISBN 获取图书目录详情
+     */
+    Catalog getCatalogByIsbn(String isbn);
+
 }
