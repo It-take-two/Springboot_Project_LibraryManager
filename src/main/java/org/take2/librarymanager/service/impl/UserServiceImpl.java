@@ -47,7 +47,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         Page<User> page = new Page<>(current, 12);
         LambdaQueryWrapper<User> query = new LambdaQueryWrapper<User>()
                 .ne(User::getRoleName, "admin");
-        return this.page(page);
+        return this.page(page, query);
     }
 
     @Override
@@ -56,7 +56,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         Page<User> page = new Page<>(current, 12);
         LambdaQueryWrapper<User> query = new LambdaQueryWrapper<User>()
                 .eq(User::getRoleName, "admin");
-        return this.page(page);
+        return this.page(page, query);
     }
 
     @Override
@@ -104,7 +104,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     public Boolean updatePassword(String oldPassword, String newPassword) {
         Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = getById(userId);
-        if (user == null || !hashEncoder.matches(user.getUsername(), oldPassword)) {
+        if (user == null || !hashEncoder.matches(oldPassword, user.getPassword())) {
             return false;
         }
         user.setPassword(hashEncoder.encode(newPassword));

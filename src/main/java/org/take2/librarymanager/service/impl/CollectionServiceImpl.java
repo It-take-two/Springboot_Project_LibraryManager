@@ -1,6 +1,6 @@
 package org.take2.librarymanager.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.take2.librarymanager.mapper.CollectionMapper;
@@ -48,7 +48,7 @@ public class CollectionServiceImpl extends ServiceImpl<CollectionMapper, Collect
     }
 
     @Override
-    public Page<CollectionVO> searchCollections(int current, String keyword, String bigCategory, String subCategory) {
+    public IPage<CollectionVO> searchCollections(int current, String keyword, String bigCategory, String subCategory) {
         Page<CollectionVO> page = new Page<>(current, 12);
         return collectionMapper.searchCollections(page, keyword, bigCategory, subCategory);
     }
@@ -57,6 +57,9 @@ public class CollectionServiceImpl extends ServiceImpl<CollectionMapper, Collect
     public CollectionVO getCollectionByBarcode(String barcode) {
         return collectionMapper.selectByBarcode(barcode);
     }
+
+    @Override
+    public CollectionVO getCollectionById(Long collectionId) { return collectionMapper.getById(collectionId); }
 
     @Override
     public List<CollectionVO> getRandomBorrowableCollections(int count) {

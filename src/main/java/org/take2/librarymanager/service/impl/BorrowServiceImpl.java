@@ -1,5 +1,6 @@
 package org.take2.librarymanager.service.impl;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.take2.librarymanager.mapper.BorrowMapper;
@@ -29,31 +30,31 @@ public class BorrowServiceImpl extends ServiceImpl<BorrowMapper, Borrow> impleme
     private UserMapper userMapper;
 
     @Override
-    public Page<BorrowVO> getAllBorrows(int current) {
+    public IPage<BorrowVO> getAllBorrows(int current) {
         Page<BorrowVO> page = new Page<>(current, 12);
         return borrowMapper.selectAllBorrows(page);
     }
 
     @Override
-    public Page<BorrowVO> getIncompleteBorrows(int current) {
+    public IPage<BorrowVO> getIncompleteBorrows(int current) {
         Page<BorrowVO> page = new Page<>(current, 12);
         return borrowMapper.selectIncompleteBorrows(page);
     }
 
     @Override
-    public Page<BorrowVO> getBorrowsByUser(Long userId, int current) {
+    public IPage<BorrowVO> getBorrowsByUser(Long userId, int current) {
         Page<BorrowVO> page = new Page<>(current, 12);
         return borrowMapper.selectBorrowsByUser(page, userId);
     }
 
     @Override
-    public Page<BorrowVO> getMyBorrows(int current) {
+    public IPage<BorrowVO> getMyBorrows(int current) {
         Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return getBorrowsByUser(userId, current);
     }
 
     @Override
-    public Page<BorrowVO> getMyIncompleteBorrows(int current) {
+    public IPage<BorrowVO> getMyIncompleteBorrows(int current) {
         Page<BorrowVO> page = new Page<>(current, 12);
         Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return borrowMapper.selectMyIncompleteBorrows(page, userId);

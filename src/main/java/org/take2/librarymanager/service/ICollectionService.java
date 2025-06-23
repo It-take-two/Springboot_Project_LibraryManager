@@ -1,5 +1,6 @@
 package org.take2.librarymanager.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.take2.librarymanager.model.Collection;
@@ -18,7 +19,7 @@ public interface ICollectionService extends IService<Collection> {
      * @param subCategory 分类小类筛选（如 "A1"）
      * @return 分页结果，内部数据封装在 CollectionVO record 中
      */
-    Page<CollectionServiceImpl.CollectionVO> searchCollections(
+    IPage<CollectionServiceImpl.CollectionVO> searchCollections(
             int current, String keyword, String bigCategory, String subCategory);
 
     /**
@@ -28,6 +29,8 @@ public interface ICollectionService extends IService<Collection> {
      * @return 返回查询结果，封装在 CollectionVO record 中
      */
     CollectionServiceImpl.CollectionVO getCollectionByBarcode(String barcode);
+
+    CollectionServiceImpl.CollectionVO getCollectionById(Long collectionId);
 
     /**
      * 随机查询几本可借图书（isBorrowable 为 true）

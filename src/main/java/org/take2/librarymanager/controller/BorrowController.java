@@ -1,5 +1,6 @@
 package org.take2.librarymanager.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -69,7 +70,7 @@ public class BorrowController {
      */
     @GetMapping("/list")
     public BorrowPageResponse getAllBorrows(@RequestParam int page) {
-        Page<BorrowServiceImpl.BorrowVO> result = borrowService.getAllBorrows(page);
+        IPage<BorrowServiceImpl.BorrowVO> result = borrowService.getAllBorrows(page);
         return new BorrowPageResponse(result.getRecords().stream()
                 .map(vo -> new BorrowResponse(
                         vo.id(),
@@ -92,7 +93,7 @@ public class BorrowController {
      */
     @GetMapping("/incomplete")
     public BorrowPageResponse getIncompleteBorrows(@RequestParam int page) {
-        Page<BorrowServiceImpl.BorrowVO> result = borrowService.getIncompleteBorrows(page);
+        IPage<BorrowServiceImpl.BorrowVO> result = borrowService.getIncompleteBorrows(page);
         return new BorrowPageResponse(result.getRecords().stream()
                 .map(vo -> new BorrowResponse(
                         vo.id(),
@@ -115,7 +116,7 @@ public class BorrowController {
      */
     @GetMapping("/user")
     public BorrowPageResponse getBorrowsByUser(@RequestParam Long userId, @RequestParam int page) {
-        Page<BorrowServiceImpl.BorrowVO> result = borrowService.getBorrowsByUser(userId, page);
+        IPage<BorrowServiceImpl.BorrowVO> result = borrowService.getBorrowsByUser(userId, page);
         return new BorrowPageResponse(result.getRecords().stream()
                 .map(vo -> new BorrowResponse(
                         vo.id(),
@@ -138,7 +139,7 @@ public class BorrowController {
      */
     @GetMapping("/my")
     public BorrowPageResponse getMyBorrows(@RequestParam int page) {
-        Page<BorrowServiceImpl.BorrowVO> result = borrowService.getMyBorrows(page);
+        IPage<BorrowServiceImpl.BorrowVO> result = borrowService.getMyBorrows(page);
         return new BorrowPageResponse(result.getRecords().stream()
                 .map(vo -> new BorrowResponse(
                         vo.id(),
@@ -161,7 +162,7 @@ public class BorrowController {
      */
     @GetMapping("/my/incomplete")
     public BorrowPageResponse getMyIncompleteBorrows(@RequestParam int page) {
-        Page<BorrowServiceImpl.BorrowVO> result = borrowService.getMyIncompleteBorrows(page);
+        IPage<BorrowServiceImpl.BorrowVO> result = borrowService.getMyIncompleteBorrows(page);
         return new BorrowPageResponse(result.getRecords().stream()
                 .map(vo -> new BorrowResponse(
                         vo.id(),

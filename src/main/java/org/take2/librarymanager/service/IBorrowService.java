@@ -1,5 +1,6 @@
 package org.take2.librarymanager.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.take2.librarymanager.model.Borrow;
@@ -17,27 +18,27 @@ public interface IBorrowService extends IService<Borrow> {
     /**
      * 获取所有借阅记录（管理员接口）
      */
-    Page<BorrowServiceImpl.BorrowVO> getAllBorrows(int current);
+    IPage<BorrowServiceImpl.BorrowVO> getAllBorrows(int current);
 
     /**
      * 获取未完成的借阅记录（管理员接口），条件：对应馆藏的 is_borrowable = false
      */
-    Page<BorrowServiceImpl.BorrowVO> getIncompleteBorrows(int current);
+    IPage<BorrowServiceImpl.BorrowVO> getIncompleteBorrows(int current);
 
     /**
      * 根据用户 ID 获取借阅记录（管理员接口）
      */
-    Page<BorrowServiceImpl.BorrowVO> getBorrowsByUser(Long userId, int current);
+    IPage<BorrowServiceImpl.BorrowVO> getBorrowsByUser(Long userId, int current);
 
     /**
      * 当前用户获取自己的所有借阅记录
      */
-    Page<BorrowServiceImpl.BorrowVO> getMyBorrows(int current);
+    IPage<BorrowServiceImpl.BorrowVO> getMyBorrows(int current);
 
     /**
      * 当前用户获取自己未完成的借阅记录
      */
-    Page<BorrowServiceImpl.BorrowVO> getMyIncompleteBorrows(int current);
+    IPage<BorrowServiceImpl.BorrowVO> getMyIncompleteBorrows(int current);
 
     /**
      * 新增借阅记录
