@@ -118,11 +118,19 @@ public class BorrowServiceImpl extends ServiceImpl<BorrowMapper, Borrow> impleme
     @Transactional
     public boolean updateBorrow(Borrow borrow, Boolean collectionBorrowable) {
         Borrow existing = getById(borrow.getId());
+        Collection collection = collectionMapper.selectById(existing.getCollectionId());
+
         if (existing == null) return false;
+
+        if (collection == null || collection.getIsBorrowable()) {
+            return false;
+        }
 
         if (borrow.getReturnDate() != null && existing.getReturnDate() == null) {
             existing.setReturnDate(Instant.now());
             existing.setFinePaid(borrow.getFinePaid() != null ? borrow.getFinePaid() : BigDecimal.ZERO);
+            collection.setIsBorrowable(true);
+            collectionMapper.updateById(collection);
         } else if (!borrow.getFinePaid().equals(new BigDecimal(0))) {
             existing.setFinePaid(borrow.getFinePaid());
         } else if (borrow.getRenewedTimes() != null) {
