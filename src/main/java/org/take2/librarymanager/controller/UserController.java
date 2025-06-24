@@ -47,6 +47,11 @@ public class UserController {
         return toResponse(userService.getMyUser());
     }
 
+    @GetMapping("/by_id")
+    public UserResponse getById(@RequestParam Long userId) {
+        return toResponse(userService.getById(userId));
+    }
+
     @GetMapping("/userList")
     public UserPageResponse getUserList(@RequestParam int page) {
         IPage<User> iPage = userService.getUserPage(page);

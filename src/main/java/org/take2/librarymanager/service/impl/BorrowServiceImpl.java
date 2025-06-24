@@ -4,10 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.take2.librarymanager.mapper.BorrowMapper;
-import org.take2.librarymanager.mapper.BorrowRuleMapper;
-import org.take2.librarymanager.mapper.CollectionMapper;
-import org.take2.librarymanager.mapper.UserMapper;
+import org.springframework.transaction.annotation.Transactional;
+import org.take2.librarymanager.mapper.*;
 import org.take2.librarymanager.model.Borrow;
 import org.take2.librarymanager.model.BorrowRule;
 import org.take2.librarymanager.model.Collection;
@@ -31,6 +29,9 @@ public class BorrowServiceImpl extends ServiceImpl<BorrowMapper, Borrow> impleme
 
     @Autowired
     private CollectionMapper collectionMapper;
+
+    @Autowired
+    private CatalogMapper catalogMapper;
 
     @Autowired
     private UserMapper userMapper;
@@ -115,14 +116,16 @@ public class BorrowServiceImpl extends ServiceImpl<BorrowMapper, Borrow> impleme
     }
 
     @Override
+    @Transactional
     public boolean updateBorrow(Borrow borrow, Boolean collectionBorrowable) {
         Borrow existing = getById(borrow.getId());
         if (existing == null) return false;
 
-        // === 还书 ===
         if (borrow.getReturnDate() != null && existing.getReturnDate() == null) {
             existing.setReturnDate(Instant.now());
             existing.setFinePaid(borrow.getFinePaid() != null ? borrow.getFinePaid() : BigDecimal.ZERO);
+        } else if (!borrow.getFinePaid().equals(new BigDecimal(0))) {
+            existing.setFinePaid(borrow.getFinePaid());
         } else if (borrow.getRenewedTimes() != null) {
             System.out.println(borrow.getUserId() + existing.getUserId());
             if (!Objects.equals(borrow.getUserId(), existing.getUserId())) {

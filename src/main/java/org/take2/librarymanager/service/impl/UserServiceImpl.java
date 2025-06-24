@@ -42,6 +42,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
     @Override
+    public User getUserById(Long id) {
+        if (!isAuthorized()) { throw new IllegalArgumentException("无权限"); }
+        return userMapper.selectById(id);
+    }
+
+    @Override
     public Page<User> getUserPage(int current) {
         if (!isAuthorized()) throw new IllegalArgumentException("权限不足");
         Page<User> page = new Page<>(current, 12);

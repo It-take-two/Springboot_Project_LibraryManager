@@ -9,6 +9,8 @@ import java.util.List;
 public interface IUserService extends IService<User> {
     User getMyUser();
 
+    User getUserById(Long id);
+
     Page<User> getUserPage(int current);
 
     Page<User> getAdminPage(int current);
