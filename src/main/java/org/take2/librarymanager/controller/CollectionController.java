@@ -1,7 +1,6 @@
 package org.take2.librarymanager.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.take2.librarymanager.service.ICollectionService;
@@ -19,9 +18,6 @@ public class CollectionController {
 
     private final ICollectionService collectionService;
 
-    /**
-     * 封装查询结果的响应体
-     */
     public record CollectionResponse(
             Long id,
             String barcode,
@@ -42,15 +38,8 @@ public class CollectionController {
             Long total
     ) {}
 
-    /**
-     * 新增馆藏时请求体，仅传入图书目录 ID
-     */
     public record CollectionAddRequest(Long catalogId) {}
 
-    /**
-     * 分页查询馆藏
-     * GET /collection/search?page=1&keyword=xxx&bigCategory=A&subCategory=A1
-     */
     @GetMapping("/search")
     public CollectionPageResponse searchCollections(
             @RequestParam int page,
@@ -77,10 +66,6 @@ public class CollectionController {
         );
     }
 
-    /**
-     * 管理员通过 barcode 查询馆藏
-     * GET /collection/barcode?barcode=xxx
-     */
     @GetMapping("/barcode")
     public CollectionResponse getCollectionByBarcode(@RequestParam String barcode) {
         CollectionVO vo = collectionService.getCollectionByBarcode(barcode);
@@ -100,10 +85,6 @@ public class CollectionController {
                 vo.value());
     }
 
-    /**
-     * 管理员通过 ID 查询馆藏
-     * GET /collection/id?id=123
-     */
     @GetMapping("/id")
     public CollectionResponse getCollectionById(@RequestParam Long id) {
         CollectionVO vo = collectionService.getCollectionById(id);
@@ -124,10 +105,6 @@ public class CollectionController {
         );
     }
 
-    /**
-     * 普通用户随机查询几本可借图书
-     * GET /collection/random?count=3
-     */
     @GetMapping("/random")
     public List<CollectionResponse> getRandomBorrowableCollections() {
         List<CollectionVO> list = collectionService.getRandomBorrowableCollections(9);
@@ -148,20 +125,11 @@ public class CollectionController {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * 管理员新增馆藏
-     * POST /collection/add
-     * 请求体示例：{"catalogId": 1}
-     */
     @PostMapping("/add")
     public boolean addCollection(@RequestBody CollectionAddRequest request) {
         return collectionService.createCollection(request.catalogId());
     }
 
-    /**
-     * 管理员删除馆藏
-     * DELETE /collection/{id}
-     */
     @DeleteMapping("/{id}")
     public boolean deleteCollection(@PathVariable Long id) {
         return collectionService.deleteCollection(id);

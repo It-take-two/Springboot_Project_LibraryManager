@@ -8,8 +8,5 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class ClassServiceImpl extends ServiceImpl<ClassMapper, Class> implements IClassService {
-    @Override
-    public Class getClassById(Long classId) {
-        return baseMapper.selectById(classId);
-    }
+
 }

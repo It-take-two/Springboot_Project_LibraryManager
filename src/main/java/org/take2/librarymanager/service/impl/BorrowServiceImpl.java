@@ -10,7 +10,6 @@ import org.take2.librarymanager.model.Borrow;
 import org.take2.librarymanager.model.BorrowRule;
 import org.take2.librarymanager.model.Collection;
 import org.take2.librarymanager.model.User;
-import org.take2.librarymanager.service.IBorrowRuleService;
 import org.take2.librarymanager.service.IBorrowService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;

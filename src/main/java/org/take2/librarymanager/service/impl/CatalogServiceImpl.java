@@ -21,9 +21,6 @@ public class CatalogServiceImpl extends ServiceImpl<CatalogMapper, Catalog> impl
     @Autowired
     private UserMapper userMapper; // 用于权限验证
 
-    /**
-     * 判断当前登录用户是否为管理员（role_name = "admin"）
-     */
     private boolean isAuthorized() {
         Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User currentUser = userMapper.selectById(userId);
@@ -39,9 +36,8 @@ public class CatalogServiceImpl extends ServiceImpl<CatalogMapper, Catalog> impl
     @Override
     public boolean createCatalog(String name, String isbn, String publisher, String category, Instant publishDate, String author, BigDecimal value) {
         if (!isAuthorized()) {
-            return false; // 非管理员无权限
+            return false;
         }
-        // 检查是否已有相同的 ISBN（要求图书 ISBN 唯一）
         LambdaQueryWrapper<Catalog> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Catalog::getIsbn, isbn);
         if (this.getOne(queryWrapper) != null) {

@@ -8,5 +8,4 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 public interface RefreshTokenMapper extends BaseMapper<RefreshToken> {
     RefreshToken selectByUserIdAndHashedToken(Long userId, String hashedToken);
     void deleteByUserIdAndHashedToken(Long userId, String hashedToken);
-
 }

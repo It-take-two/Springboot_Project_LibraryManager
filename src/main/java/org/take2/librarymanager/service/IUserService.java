@@ -1,15 +1,11 @@
 package org.take2.librarymanager.service;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.take2.librarymanager.model.User;
-import java.util.List;
 
 public interface IUserService extends IService<User> {
     User getMyUser();
-
-    User getUserById(Long id);
 
     Page<User> getUserPage(int current);
 

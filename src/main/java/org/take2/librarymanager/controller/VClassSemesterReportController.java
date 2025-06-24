@@ -35,9 +35,7 @@ public class VClassSemesterReportController {
                 cell.setCellValue(headers[i]);
             }
 
-            // 获取报表数据
             List<VClassSemesterReport> reports = reportService.getAllReports();
-            // 定义时间格式化器
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
                     .withZone(ZoneId.systemDefault());
             int rowIdx = 1;

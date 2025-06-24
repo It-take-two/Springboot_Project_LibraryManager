@@ -29,18 +29,12 @@ public class CollectionServiceImpl extends ServiceImpl<CollectionMapper, Collect
     @Autowired
     private UserMapper userMapper;
 
-    /**
-     * 检查当前登录用户是否为管理员（要求 role_name 为 "admin"）
-     */
     private boolean isAuthorized() {
         Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User currentUser = userMapper.selectById(userId);
         return currentUser != null && "admin".equals(currentUser.getRoleName());
     }
 
-    /**
-     * 自动生成 barcode；示例规则：B + 当前时间戳 + 4位随机数字
-     */
     private String generateBarcode() {
         long timestamp = System.currentTimeMillis();
         int randomNum = new Random().nextInt(9000) + 1000;
@@ -90,11 +84,6 @@ public class CollectionServiceImpl extends ServiceImpl<CollectionMapper, Collect
         return removeById(id);
     }
 
-    /**
-     * 内部定义的 CollectionVO record，用于封装查询时关联的馆藏和图书目录信息。
-     * 注意：在 CollectionMapper.xml 中对相关查询的 resultType 必须修改为：
-     * "org.take2.librarymanager.service.impl.CollectionServiceImpl$CollectionVO"
-     */
     public static record CollectionVO(
             Long id,
             String barcode,

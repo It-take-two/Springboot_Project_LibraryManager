@@ -17,9 +17,6 @@ public class CatalogController {
 
     private final ICatalogService catalogService;
 
-    /**
-     * 请求体：新增或更新图书目录时使用的字段
-     */
     public record CatalogRequest(
             String name,
             String isbn,
@@ -30,9 +27,6 @@ public class CatalogController {
             BigDecimal value
     ) {}
 
-    /**
-     * 响应体：返回图书目录的详细信息
-     */
     public record CatalogResponse(
             Long id,
             String name,
@@ -49,9 +43,6 @@ public class CatalogController {
             Long total
     ) {}
 
-    /**
-     * 分页查询图书目录（GET /catalog/list?page=1）
-     */
     @GetMapping("/list")
     public CatalogPageResponse getCatalogList(@RequestParam int page) {
         Page<Catalog> catalogPage = catalogService.getCatalogPage(page);
@@ -72,10 +63,6 @@ public class CatalogController {
         );
     }
 
-
-    /**
-     * 管理员新增图书目录（POST /catalog/add）
-     */
     @PostMapping("/add")
     public boolean addCatalog(@RequestBody CatalogRequest req) {
         return catalogService.createCatalog(
@@ -89,9 +76,6 @@ public class CatalogController {
         );
     }
 
-    /**
-     * 管理员更新图书目录（PUT /catalog/update?id=1）
-     */
     @PutMapping("/update")
     public boolean updateCatalog(@RequestParam Long id, @RequestBody CatalogRequest req) {
         return catalogService.updateCatalog(
@@ -106,17 +90,11 @@ public class CatalogController {
         );
     }
 
-    /**
-     * 管理员删除图书目录（DELETE /catalog/{id}）
-     */
     @DeleteMapping("/{id}")
     public boolean deleteCatalog(@PathVariable Long id) {
         return catalogService.deleteCatalog(id);
     }
 
-    /**
-     * 根据 ID 获取图书目录详情（GET /catalog/{id}）
-     */
     @GetMapping("/{id}")
     public CatalogResponse getCatalog(@PathVariable Long id) {
         Catalog catalog = catalogService.getCatalogById(id);
@@ -134,9 +112,6 @@ public class CatalogController {
                 catalog.getValue());
     }
 
-    /**
-     * 根据 ISBN 获取图书目录详情（GET /catalog/isbn?isbn=...）
-     */
     @GetMapping("/isbn")
     public CatalogResponse getCatalogByIsbn(@RequestParam String isbn) {
         Catalog catalog = catalogService.getCatalogByIsbn(isbn);
