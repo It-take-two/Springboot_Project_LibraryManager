@@ -141,7 +141,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (user == null) {
             return false;
         }
-        if (!isAuthorized() || user.getRoleName().equals("admin")) {
+        if (!isAuthorized() || (user.getRoleName().equals("admin") && !isRoot())) {
             return false;
         }
         user.setRoleName(roleName)

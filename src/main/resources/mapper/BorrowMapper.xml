@@ -57,8 +57,10 @@
         ORDER BY b.id DESC
     </select>
 
-    <!-- 查询当前用户未完成的借阅记录 -->
-    <select id="selectMyIncompleteBorrows" resultType="org.take2.librarymanager.service.impl.BorrowServiceImpl$BorrowVO" parameterType="map">
+    <!-- 查询当前用户未归还的借阅记录 -->
+    <select id="selectMyIncompleteBorrows"
+            resultType="org.take2.librarymanager.service.impl.BorrowServiceImpl$BorrowVO"
+            parameterType="map">
         SELECT
             b.id,
             b.borrow_date AS borrowDate,
@@ -71,7 +73,8 @@
             c.is_borrowable AS collectionIsBorrowable
         FROM borrow b
                  INNER JOIN collection c ON b.collection_id = c.id
-        WHERE b.user_id = #{userId} AND c.is_borrowable = false
+        WHERE b.user_id = #{userId}
+          AND b.return_date IS NULL
         ORDER BY b.id DESC
     </select>
 
