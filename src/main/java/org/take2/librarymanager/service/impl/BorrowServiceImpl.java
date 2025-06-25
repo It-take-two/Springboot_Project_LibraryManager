@@ -98,13 +98,24 @@ public class BorrowServiceImpl extends ServiceImpl<BorrowMapper, Borrow> impleme
             return false;
         }
 
+        LambdaQueryWrapper<BorrowRule> lambdaQuery = new LambdaQueryWrapper<>();
+        lambdaQuery.eq(BorrowRule::getRoleName, user.getRoleName());
+
+        BorrowRule borrowRule = borrowRuleMapper.selectOne(lambdaQuery);
+
+        long incompleteBorrows = borrowMapper.selectMyIncompleteBorrows(new Page<>(1,12), user.getId()).getTotal();
+        long max = (long) borrowRule.getMaxBooks();
+        System.out.println(incompleteBorrows + " " + max);
+        if (max <= incompleteBorrows) {
+            return false;
+        }
+
         borrow.setBorrowDate(Instant.now());
         borrow.setReturnDeadline(calculateReturnDeadline(user.getId(), borrow.getBorrowDate()));
         borrow.setRenewedTimes(0);
         borrow.setFinePaid(BigDecimal.ZERO);
 
         boolean result = save(borrow);
-        System.out.println("result:" + result);
 
         if (result) {
             collection.setIsBorrowable(false);
@@ -131,7 +142,7 @@ public class BorrowServiceImpl extends ServiceImpl<BorrowMapper, Borrow> impleme
             existing.setFinePaid(borrow.getFinePaid() != null ? borrow.getFinePaid() : BigDecimal.ZERO);
             collection.setIsBorrowable(true);
             collectionMapper.updateById(collection);
-        } else if (!borrow.getFinePaid().equals(new BigDecimal(0))) {
+        } else if (borrow.getFinePaid() != null && !borrow.getFinePaid().equals(new BigDecimal(0))) {
             existing.setFinePaid(borrow.getFinePaid());
         } else if (borrow.getRenewedTimes() != null) {
             System.out.println(borrow.getUserId() + existing.getUserId());
@@ -164,7 +175,7 @@ public class BorrowServiceImpl extends ServiceImpl<BorrowMapper, Borrow> impleme
                 collectionMapper.updateById(coll);
             }
         }
-
+        System.out.println("test4");
         return result;
     }
 
